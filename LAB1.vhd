@@ -7,154 +7,152 @@ use std.textio.all;
 
 ENTITY LAB1 IS
 	PORT (
-		wybor_kanapki : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
-		wybor_platnosci : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
-		ilosc_gotowki : IN STD_LOGIC_VECTOR (5 DOWNTO 0);
-		awaria : OUT STD_LOGIC := '0';
-		brak_towaru : OUT STD_LOGIC := '0';
-		za_malo_pieniedzy : OUT STD_LOGIC := '0'
+		selected_product : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
+		selected_payment : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
+		how_much_cash : IN STD_LOGIC_VECTOR (5 DOWNTO 0);
+		breakdown : OUT STD_LOGIC := '0';
+		no_product : OUT STD_LOGIC := '0';
+		not_enaught_cash_error : OUT STD_LOGIC := '0'
 	);
 END ENTITY;
 
 ARCHITECTURE rtl OF LAB1 IS
 	TYPE integer_array IS ARRAY (0 TO 5) OF INTEGER RANGE 0 TO 100;
 	
-	FUNCTION wydawanie_pieniedzy(
-		podana_kwota : INTEGER RANGE 0 TO 100;
-		cena : INTEGER RANGE 0 TO 100;
-		ilosc_pieniedzy_do_wydania : integer_array
+	FUNCTION giving_change(
+		given_cash_value : INTEGER RANGE 0 TO 100;
+		product_price : INTEGER RANGE 0 TO 100;
+		coins_in_machine : integer_array
 	)
 		RETURN integer_array IS
-		VARIABLE reszta_pieniedzy_do_wydania : integer_array;
-		VARIABLE kwota_do_wydania : INTEGER RANGE -100 TO 100 := (cena - podana_kwota);
+		VARIABLE conis_left_in_machine : integer_array;
+		VARIABLE rest_to_give : INTEGER RANGE -100 TO 100 := -(product_price - given_cash_value);
 		VARIABLE counter : INTEGER RANGE 0 TO 100 := 100;
 
 	BEGIN
 
-		reszta_pieniedzy_do_wydania := ilosc_pieniedzy_do_wydania;
+		conis_left_in_machine := coins_in_machine;
 
-		kwota_do_wydania := - kwota_do_wydania;
-		--	 reszta_pieniedzy_do_wydania(5) := reszta_pieniedzy_do_wydania(5) - 1;
+		--   rest_to_give := - rest_to_give;
+		--	 conis_left_in_machine(5) := conis_left_in_machine(5) - 1;
 
 		WHILE counter > 0 LOOP
 			counter := counter - 1;
 			
-				IF(kwota_do_wydania >= 50 and reszta_pieniedzy_do_wydania(5) > 0) THEN
-					kwota_do_wydania := kwota_do_wydania - 50;
-					reszta_pieniedzy_do_wydania(5) := reszta_pieniedzy_do_wydania(5) - 1;
+				IF(rest_to_give >= 50 and conis_left_in_machine(5) > 0) THEN
+					rest_to_give := rest_to_give - 50;
+					conis_left_in_machine(5) := conis_left_in_machine(5) - 1;
 					NEXT WHEN counter = counter - 1;			
 				END IF;
 			
-				IF(kwota_do_wydania >= 20 and reszta_pieniedzy_do_wydania(4) > 0) THEN
-					kwota_do_wydania := kwota_do_wydania - 20;
-					reszta_pieniedzy_do_wydania(4) := reszta_pieniedzy_do_wydania(4) - 1;
+				IF(rest_to_give >= 20 and conis_left_in_machine(4) > 0) THEN
+					rest_to_give := rest_to_give - 20;
+					conis_left_in_machine(4) := conis_left_in_machine(4) - 1;
 					NEXT WHEN counter = counter - 1;	
 				END IF;			
 			
-				IF(kwota_do_wydania >= 10 and reszta_pieniedzy_do_wydania(3) > 0) THEN
-					kwota_do_wydania := kwota_do_wydania - 10;
-					reszta_pieniedzy_do_wydania(3) := reszta_pieniedzy_do_wydania(3) - 1;
+				IF(rest_to_give >= 10 and conis_left_in_machine(3) > 0) THEN
+					rest_to_give := rest_to_give - 10;
+					conis_left_in_machine(3) := conis_left_in_machine(3) - 1;
 					NEXT WHEN counter = counter - 1;			
 				END IF;
 			
-				IF(kwota_do_wydania >= 5 and reszta_pieniedzy_do_wydania(2) > 0) THEN
-					kwota_do_wydania := kwota_do_wydania - 5;
-					reszta_pieniedzy_do_wydania(2) := reszta_pieniedzy_do_wydania(2) - 1;
+				IF(rest_to_give >= 5 and conis_left_in_machine(2) > 0) THEN
+					rest_to_give := rest_to_give - 5;
+					conis_left_in_machine(2) := conis_left_in_machine(2) - 1;
 					NEXT WHEN counter = counter - 1;			
 				END IF;
 			
-				IF(kwota_do_wydania >= 2 and reszta_pieniedzy_do_wydania(1) > 0) THEN
-					kwota_do_wydania := kwota_do_wydania - 2;
-					reszta_pieniedzy_do_wydania(1) := reszta_pieniedzy_do_wydania(1) - 1;
+				IF(rest_to_give >= 2 and conis_left_in_machine(1) > 0) THEN
+					rest_to_give := rest_to_give - 2;
+					conis_left_in_machine(1) := conis_left_in_machine(1) - 1;
 					NEXT WHEN counter = counter - 1;
 				END IF;
-				IF (kwota_do_wydania >= 1) THEN
-					IF(reszta_pieniedzy_do_wydania(0) > 0) THEN
-						kwota_do_wydania := kwota_do_wydania - 1;
-						reszta_pieniedzy_do_wydania(0) := reszta_pieniedzy_do_wydania(0) - 1;
+				IF (rest_to_give >= 1) THEN
+					IF(conis_left_in_machine(0) > 0) THEN
+						rest_to_give := rest_to_give - 1;
+						conis_left_in_machine(0) := conis_left_in_machine(0) - 1;
 						NEXT WHEN counter = counter - 1;
 					ELSE
-						return ilosc_pieniedzy_do_wydania;
+						return coins_in_machine;
 					END IF;
 				END IF;
 
 		END LOOP;
-		--	 reszta_pieniedzy_do_wydania(3) := 2;
-		RETURN reszta_pieniedzy_do_wydania;
+		--	 conis_left_in_machine(3) := 2;
+		RETURN conis_left_in_machine;
 		
-END FUNCTION wydawanie_pieniedzy;
+END FUNCTION giving_change;
 
 
 
 BEGIN
-	PROCESS (wybor_kanapki)
-		VARIABLE res, BB, BC, BA : signed (16 DOWNTO 0);
-		VARIABLE CF, ZF, SF : STD_LOGIC;
+	PROCESS (selected_product)
 
-		VARIABLE ilosc_kanapek_z_szynka : INTEGER RANGE 0 TO 10 := 9;
-		VARIABLE ilosc_kanapek_z_jajkiem : INTEGER RANGE 0 TO 10 := 2;
+		VARIABLE number_of_ham_sandwiches : INTEGER RANGE 0 TO 10 := 9;
+		VARIABLE number_of_egg_sandwiches : INTEGER RANGE 0 TO 10 := 2;
 
-		VARIABLE cena_kanapki_z_szynka : INTEGER := 1;
-		VARIABLE cena_kanapki_z_jajkiem : INTEGER := 3;
+		VARIABLE ham_sandwich_price : INTEGER := 1;
+		VARIABLE egg_sandwich_price : INTEGER := 3;
 
-		VARIABLE ilosc_gotowki_int : INTEGER RANGE 0 TO 100 := 0;
+		VARIABLE how_much_cash_int : INTEGER RANGE 0 TO 100 := 0;
 
-		VARIABLE aktualna_cena : INTEGER RANGE 0 TO 10 := 0;
+		VARIABLE current_product_prive : INTEGER RANGE 0 TO 10 := 0;
 
-		VARIABLE pieniadze_do_wydania : integer_array := (2, 2, 2, 2, 2, 2);
+		VARIABLE coins_in_machine : integer_array := (2, 2, 2, 2, 2, 2);
 
-		VARIABLE pieniadze_do_wydania_save : integer_array := (2, 10, 10, 10, 10, 10);
+		VARIABLE coins_in_machine_left_after_transaction : integer_array := (2, 10, 10, 10, 10, 10);
 	BEGIN
-		awaria <= '0';
-		brak_towaru <= '0';
-		aktualna_cena := 0;
-		za_malo_pieniedzy <= '0';
-		CASE wybor_kanapki IS
-			WHEN "00" => awaria <= '1';
+		breakdown <= '0';
+		no_product <= '0';
+		current_product_prive := 0;
+		not_enaught_cash_error <= '0';
+		CASE selected_product IS
+			WHEN "00" => breakdown <= '1';
 
 			WHEN "01" =>
-				ilosc_gotowki_int := to_integer(unsigned(ilosc_gotowki));
-				IF (ilosc_kanapek_z_szynka > 0) THEN
+				how_much_cash_int := to_integer(unsigned(how_much_cash));
+				IF (number_of_ham_sandwiches > 0) THEN
 
-					CASE wybor_platnosci IS
+					CASE selected_payment IS
 
 							-- platnosc blik
 						WHEN "00" =>
-							ilosc_kanapek_z_szynka := ilosc_kanapek_z_szynka - 1;
+							number_of_ham_sandwiches := number_of_ham_sandwiches - 1;
 
 							-- platnosc karta
 						WHEN "01" =>
-							ilosc_kanapek_z_szynka := ilosc_kanapek_z_szynka - 1;
+							number_of_ham_sandwiches := number_of_ham_sandwiches - 1;
 
 							-- platnosc gotowka
 						WHEN "10" =>
-							IF (ilosc_gotowki_int >= cena_kanapki_z_szynka) THEN
-								IF ((ilosc_gotowki_int - cena_kanapki_z_szynka) = 0) THEN
-									ilosc_kanapek_z_szynka := ilosc_kanapek_z_szynka - 1;
+							IF (how_much_cash_int >= ham_sandwich_price) THEN
+								IF ((how_much_cash_int - ham_sandwich_price) = 0) THEN
+									number_of_ham_sandwiches := number_of_ham_sandwiches - 1;
 								ELSE
-									pieniadze_do_wydania_save := wydawanie_pieniedzy(
-										ilosc_gotowki_int,
-										cena_kanapki_z_szynka,
-										pieniadze_do_wydania
+									coins_in_machine_left_after_transaction := giving_change(
+										how_much_cash_int,
+										ham_sandwich_price,
+										coins_in_machine
 										);
-									IF (pieniadze_do_wydania_save = pieniadze_do_wydania) THEN
-										awaria <= '1';
+									IF (coins_in_machine_left_after_transaction = coins_in_machine) THEN
+										breakdown <= '1';
 									ELSE
-										ilosc_kanapek_z_szynka := ilosc_kanapek_z_szynka - 1;
-										pieniadze_do_wydania := pieniadze_do_wydania_save;
+										number_of_ham_sandwiches := number_of_ham_sandwiches - 1;
+										coins_in_machine := coins_in_machine_left_after_transaction;
 									END IF;
 								END IF;
 								ELSE
-									za_malo_pieniedzy <= '1';
+									not_enaught_cash_error <= '1';
 								END IF;
 
-						WHEN OTHERS => awaria <= '1';
+						WHEN OTHERS => breakdown <= '1';
 
 					END CASE;
 				ELSE
-					brak_towaru <= '1';
+                    no_product <= '1';
 				END IF;
-			WHEN OTHERS => awaria <= '1';
+			WHEN OTHERS => breakdown <= '1';
 		END CASE;
 
 	END PROCESS;
