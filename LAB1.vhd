@@ -9,7 +9,7 @@ ENTITY LAB1 IS
 	PORT (
 		wybor_kanapki : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
 		wybor_platnosci : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
-		ilosc_gotowki : IN STD_LOGIC_VECTOR (4 DOWNTO 0);
+		ilosc_gotowki : IN STD_LOGIC_VECTOR (5 DOWNTO 0);
 		awaria : OUT STD_LOGIC := '0';
 		brak_towaru : OUT STD_LOGIC := '0';
 		za_malo_pieniedzy : OUT STD_LOGIC := '0'
