@@ -7,6 +7,7 @@ use std.textio.all;
 
 ENTITY LAB1 IS
 	PORT (
+		refresh_program  : IN STD_LOGIC_VECTOR (0 DOWNTO 0);
 		selected_product : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
 		selected_payment : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
 		how_much_cash : IN STD_LOGIC_VECTOR (5 DOWNTO 0);
@@ -30,50 +31,70 @@ ARCHITECTURE rtl OF LAB1 IS
 		VARIABLE counter : INTEGER RANGE 0 TO 100 := 100;
 
 	BEGIN
-
 		conis_left_in_machine := coins_in_machine;
 
 		--   rest_to_give := - rest_to_give;
 		--	 conis_left_in_machine(5) := conis_left_in_machine(5) - 1;
 
+		report "start rest_to_give: "&integer'image(rest_to_give);
+		report "start product_price: "&integer'image(product_price);
+		report "start given_cash_value: "&integer'image(given_cash_value);
+		report "rest to give loop start";
 		WHILE counter > 0 LOOP
 			counter := counter - 1;
-			
+				report "rest to give new iteration";
+				IF(rest_to_give = 0) THEN
+					EXIT;
+				END IF;
+
 				IF(rest_to_give >= 50 and conis_left_in_machine(5) > 0) THEN
 					rest_to_give := rest_to_give - 50;
 					conis_left_in_machine(5) := conis_left_in_machine(5) - 1;
+					report "rest_to_give: "&integer'image(rest_to_give);
+					report "coins_left_in_machine(5): "&integer'image(conis_left_in_machine(5));
 					NEXT WHEN counter = counter - 1;			
 				END IF;
 			
 				IF(rest_to_give >= 20 and conis_left_in_machine(4) > 0) THEN
 					rest_to_give := rest_to_give - 20;
 					conis_left_in_machine(4) := conis_left_in_machine(4) - 1;
+					report "rest_to_give: "&integer'image(rest_to_give);
+					report "coins_left_in_machine(4): "&integer'image(conis_left_in_machine(4));
 					NEXT WHEN counter = counter - 1;	
 				END IF;			
 			
 				IF(rest_to_give >= 10 and conis_left_in_machine(3) > 0) THEN
 					rest_to_give := rest_to_give - 10;
 					conis_left_in_machine(3) := conis_left_in_machine(3) - 1;
+					report "rest_to_give: "&integer'image(rest_to_give);
+					report "coins_left_in_machine(3): "&integer'image(conis_left_in_machine(3));
 					NEXT WHEN counter = counter - 1;			
 				END IF;
 			
 				IF(rest_to_give >= 5 and conis_left_in_machine(2) > 0) THEN
 					rest_to_give := rest_to_give - 5;
 					conis_left_in_machine(2) := conis_left_in_machine(2) - 1;
+					report "rest_to_give: "&integer'image(rest_to_give);
+					report "coins_left_in_machine(2): "&integer'image(conis_left_in_machine(2));
 					NEXT WHEN counter = counter - 1;			
 				END IF;
 			
 				IF(rest_to_give >= 2 and conis_left_in_machine(1) > 0) THEN
 					rest_to_give := rest_to_give - 2;
 					conis_left_in_machine(1) := conis_left_in_machine(1) - 1;
+					report "rest_to_give: "&integer'image(rest_to_give);
+					report "coins_left_in_machine(1): "&integer'image(conis_left_in_machine(1));
 					NEXT WHEN counter = counter - 1;
 				END IF;
 				IF (rest_to_give >= 1) THEN
 					IF(conis_left_in_machine(0) > 0) THEN
 						rest_to_give := rest_to_give - 1;
 						conis_left_in_machine(0) := conis_left_in_machine(0) - 1;
+						report "rest_to_give: "&integer'image(rest_to_give);
+						report "coins_left_in_machine(0): "&integer'image(conis_left_in_machine(0));
 						NEXT WHEN counter = counter - 1;
 					ELSE
+						report "End of coins to give";
 						return coins_in_machine;
 					END IF;
 				END IF;
@@ -87,7 +108,7 @@ END FUNCTION giving_change;
 
 
 BEGIN
-	PROCESS (selected_product)
+	PROCESS (refresh_program)
 
 		VARIABLE number_of_ham_sandwiches : INTEGER RANGE 0 TO 10 := 9;
 		VARIABLE number_of_egg_sandwiches : INTEGER RANGE 0 TO 10 := 2;
