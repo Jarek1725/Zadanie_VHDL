@@ -7,11 +7,10 @@ use std.textio.all;
 
 ENTITY LAB1 IS
 	PORT (
-		clk: in std_logic;
 		refresh_program  : IN STD_LOGIC_VECTOR (0 DOWNTO 0);
-		selected_product : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
+		selected_product : IN STD_LOGIC_VECTOR (2 DOWNTO 0);
 		selected_payment : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
-		restart_machine : IN STD_LOGIC_VECTOR (1 DOWNTO 0);
+		restart_machine : IN STD_LOGIC;
 		how_much_cash : IN STD_LOGIC_VECTOR (5 DOWNTO 0);
 		breakdown : OUT STD_LOGIC := '0';
 		no_product : OUT STD_LOGIC := '0';
@@ -20,7 +19,7 @@ ENTITY LAB1 IS
 END ENTITY;
 
 ARCHITECTURE rtl OF LAB1 IS
-	TYPE integer_array IS ARRAY (0 TO 3) OF INTEGER RANGE 0 TO 10;
+	TYPE integer_array IS ARRAY (0 TO 2) OF INTEGER RANGE 0 TO 5;
 	
 	FUNCTION giving_change(
 		given_cash_value : INTEGER RANGE 0 TO 10;
@@ -50,14 +49,7 @@ ARCHITECTURE rtl OF LAB1 IS
 					EXIT;
 				END IF;
 
-				IF(rest_to_give >= 10 and conis_left_in_machine(3) > 0) THEN
-					rest_to_give := rest_to_give - 10;
-					conis_left_in_machine(3) := conis_left_in_machine(3) - 1;
-					report "rest_to_give: "&integer'image(rest_to_give);
-					report "coins_left_in_machine(3): "&integer'image(conis_left_in_machine(3));
-					NEXT WHEN counter = counter - 1;			
-			
-				ELSIF(rest_to_give >= 5 and conis_left_in_machine(2) > 0) THEN
+				IF(rest_to_give >= 5 and conis_left_in_machine(2) > 0) THEN
 					rest_to_give := rest_to_give - 5;
 					conis_left_in_machine(2) := conis_left_in_machine(2) - 1;
 					report "rest_to_give: "&integer'image(rest_to_give);
@@ -102,31 +94,35 @@ BEGIN
 
 		VARIABLE ham_sandwich_price : INTEGER := 1;
 		VARIABLE egg_sandwich_price : INTEGER := 3;
-		VARIABLE egg_cheese_price : INTEGER := 2;
-		VARIABLE egg_tuna_price : INTEGER := 2;
-		VARIABLE egg_vege_price : INTEGER := 2;
+		VARIABLE cheese_sandwich_price : INTEGER := 2;
+		VARIABLE tuna_sandwich_price : INTEGER := 2;
+		VARIABLE vege_sandwich_price : INTEGER := 2;
 
 		VARIABLE how_much_cash_int : INTEGER RANGE 0 TO 32 := 0;
 
 		VARIABLE current_product_prive : INTEGER RANGE 0 TO 10 := 0;
 
-		VARIABLE coins_in_machine : integer_array := (2, 2, 2, 2);
+		VARIABLE coins_in_machine : integer_array := (4, 4, 4);
 
-		VARIABLE coins_in_machine_left_after_transaction : integer_array := (0, 0, 0, 0);
+		VARIABLE coins_in_machine_left_after_transaction : integer_array := (0, 0, 0);
 	BEGIN
 		breakdown <= '0';
 		no_product <= '0';
 		current_product_prive := 0;
 		not_enaught_cash_error <= '0';
-		IF(restart_machine = "1") THEN
-			number_of_ham_sandwiches := 9;
-			number_of_egg_sandwiches := 2;
-			coins_in_machine := (2, 2, 2, 2, 2, 2);
+		IF(restart_machine = '1') THEN
+			report "restart machine";
+			number_of_ham_sandwiches 	 := 9;
+			number_of_cheese_sandwiches := 2;
+			number_of_egg_sandwiches 	 := 2;
+			number_of_tuna_sandwiches   := 2;
+			number_of_vege_sandwiches   := 2;
+			coins_in_machine := (4, 4, 4);
 		ELSE
 			CASE selected_product IS
-				WHEN "00" => breakdown <= '1';
+				WHEN "000" => breakdown <= '1';
 
-				WHEN "01" =>
+				WHEN "001" =>
 					how_much_cash_int := to_integer(unsigned(how_much_cash));
 					IF (number_of_ham_sandwiches > 0) THEN
 						CASE selected_payment IS
@@ -162,8 +158,82 @@ BEGIN
 					ELSE
 							  no_product <= '1';
 					END IF;
-			
-			WHEN "10" =>
+					
+				WHEN "010" =>
+					how_much_cash_int := to_integer(unsigned(how_much_cash));
+					IF (number_of_tuna_sandwiches > 0) THEN
+						CASE selected_payment IS
+								-- platnosc blik
+							WHEN ("00" OR "01") =>
+								number_of_tuna_sandwiches := number_of_tuna_sandwiches - 1;
+
+								-- platnosc gotowka
+							WHEN "10" =>
+								IF (how_much_cash_int >= tuna_sandwich_price) THEN
+									IF ((how_much_cash_int - tuna_sandwich_price) = 0) THEN
+										number_of_tuna_sandwiches:= number_of_tuna_sandwiches - 1;
+									ELSE
+										coins_in_machine_left_after_transaction := giving_change(
+											how_much_cash_int,
+											tuna_sandwich_price,
+											coins_in_machine
+											);
+										IF (coins_in_machine_left_after_transaction = coins_in_machine) THEN
+											breakdown <= '1';
+										ELSE
+											number_of_tuna_sandwiches := number_of_tuna_sandwiches - 1;
+											coins_in_machine := coins_in_machine_left_after_transaction;
+										END IF;
+									END IF;
+									ELSE
+										not_enaught_cash_error <= '1';
+									END IF;
+
+							WHEN OTHERS => breakdown <= '1';
+
+						END CASE;
+					ELSE
+							  no_product <= '1';
+					END IF;
+
+				WHEN "011" =>
+					how_much_cash_int := to_integer(unsigned(how_much_cash));
+					IF (number_of_cheese_sandwiches > 0) THEN
+						CASE selected_payment IS
+								-- platnosc blik
+							WHEN ("00" OR "01") =>
+								number_of_cheese_sandwiches := number_of_cheese_sandwiches - 1;
+
+								-- platnosc gotowka
+							WHEN "10" =>
+								IF (how_much_cash_int >= tuna_sandwich_price) THEN
+									IF ((how_much_cash_int - tuna_sandwich_price) = 0) THEN
+										number_of_cheese_sandwiches:= number_of_cheese_sandwiches - 1;
+									ELSE
+										coins_in_machine_left_after_transaction := giving_change(
+											how_much_cash_int,
+											cheese_sandwich_price,
+											coins_in_machine
+											);
+										IF (coins_in_machine_left_after_transaction = coins_in_machine) THEN
+											breakdown <= '1';
+										ELSE
+											number_of_cheese_sandwiches := number_of_cheese_sandwiches - 1;
+											coins_in_machine := coins_in_machine_left_after_transaction;
+										END IF;
+									END IF;
+									ELSE
+										not_enaught_cash_error <= '1';
+									END IF;
+
+							WHEN OTHERS => breakdown <= '1';
+
+						END CASE;
+					ELSE
+							  no_product <= '1';
+					END IF;					
+					
+			WHEN "100" =>
 					how_much_cash_int := to_integer(unsigned(how_much_cash));
 					IF (number_of_egg_sandwiches > 0) THEN
 						CASE selected_payment IS
@@ -196,6 +266,7 @@ BEGIN
 							WHEN OTHERS => breakdown <= '1';
 
 						END CASE;
+						
 					ELSE
 							  no_product <= '1';
 					END IF;
