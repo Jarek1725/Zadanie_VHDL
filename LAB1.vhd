@@ -19,10 +19,10 @@ ENTITY LAB1 IS
 END ENTITY;
 
 ARCHITECTURE rtl OF LAB1 IS
-	TYPE integer_array IS ARRAY (0 TO 2) OF INTEGER RANGE 0 TO 5;
+	TYPE integer_array IS ARRAY (0 TO 2) OF INTEGER RANGE 0 TO 20;
 	
 	FUNCTION giving_change(
-		given_cash_value : INTEGER RANGE 0 TO 10;
+		given_cash_value : INTEGER RANGE 0 TO 32;
 		product_price : INTEGER RANGE 0 TO 10;
 		coins_in_machine : integer_array
 	)
@@ -77,11 +77,54 @@ ARCHITECTURE rtl OF LAB1 IS
 				END IF;
 
 		END LOOP;
+		
+		report "coins_left_in_machine(0): "&integer'image(conis_left_in_machine(0));
+		report "coins_left_in_machine(1): "&integer'image(conis_left_in_machine(1));
+		report "coins_left_in_machine(2): "&integer'image(conis_left_in_machine(2));
 		--	 conis_left_in_machine(3) := 2;
 		RETURN conis_left_in_machine;
 		
 END FUNCTION giving_change;
 
+FUNCTION add_money_from_customer(
+		given_cash_value : INTEGER RANGE 0 TO 32;
+		coins_in_machine : integer_array
+)
+		RETURN integer_array IS
+		VARIABLE conis_left_in_machine : integer_array := coins_in_machine;
+		VARIABLE given_cash_value_var : INTEGER RANGE 0 TO 32 := given_cash_value;
+		VARIABLE counter : INTEGER RANGE 0 TO 20 := 20;
+		
+		BEGIN
+		
+		WHILE counter > 0 LOOP
+			counter := counter - 1;
+			
+			IF(given_cash_value_var>0) THEN
+				IF(given_cash_value_var>= 5) THEN
+					REPORT "Added 5 to coins in machine";
+					given_cash_value_var := given_cash_value_var - 5;
+					conis_left_in_machine(2) := conis_left_in_machine(2) + 1;
+				
+				ELSIF(given_cash_value_var >= 2) THEN
+					REPORT "Added 2 to coins in machine";
+					given_cash_value_var:= given_cash_value_var - 2;
+					conis_left_in_machine(1) := conis_left_in_machine(1) + 1;
+					
+				ELSE
+					IF(given_cash_value_var>0) THEN
+					REPORT "Added 1 to coins in machine";
+					given_cash_value_var := given_cash_value_var - 1;
+					END IF;
+					conis_left_in_machine(0) := conis_left_in_machine(0) + 1;			
+				END IF;
+			END IF;
+		
+		END LOOP;
+		
+		RETURN conis_left_in_machine;
+
+END FUNCTION add_money_from_customer;
 
 BEGIN
 	PROCESS (refresh_program)
@@ -146,7 +189,11 @@ BEGIN
 										ELSE
 											number_of_ham_sandwiches := number_of_ham_sandwiches - 1;
 											coins_in_machine := coins_in_machine_left_after_transaction;
-										END IF;
+											coins_in_machine := add_money_from_customer(
+												how_much_cash_int,
+												coins_in_machine
+											);										
+											END IF;
 									END IF;
 									ELSE
 										not_enaught_cash_error <= '1';
@@ -182,7 +229,11 @@ BEGIN
 											breakdown <= '1';
 										ELSE
 											number_of_tuna_sandwiches := number_of_tuna_sandwiches - 1;
-											coins_in_machine := coins_in_machine_left_after_transaction;
+											coins_in_machine := coins_in_machine_left_after_transaction;	
+											coins_in_machine := add_money_from_customer(
+												how_much_cash_int,
+												coins_in_machine
+											);															
 										END IF;
 									END IF;
 									ELSE
@@ -219,7 +270,11 @@ BEGIN
 											breakdown <= '1';
 										ELSE
 											number_of_cheese_sandwiches := number_of_cheese_sandwiches - 1;
-											coins_in_machine := coins_in_machine_left_after_transaction;
+											coins_in_machine := coins_in_machine_left_after_transaction;			
+											coins_in_machine := add_money_from_customer(
+												how_much_cash_int,
+												coins_in_machine
+											);															
 										END IF;
 									END IF;
 									ELSE
@@ -257,6 +312,10 @@ BEGIN
 										ELSE
 											number_of_egg_sandwiches := number_of_egg_sandwiches - 1;
 											coins_in_machine := coins_in_machine_left_after_transaction;
+											coins_in_machine := add_money_from_customer(
+												how_much_cash_int,
+												coins_in_machine
+											);															
 										END IF;
 									END IF;
 									ELSE
